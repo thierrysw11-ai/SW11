@@ -1,0 +1,43 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: letmein
+      POSTGRES_DB: graph-node
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  ipfs:
+    image: ipfs/go-ipfs:v0.18.1
+    ports:
+      - "5001:5001"
+      - "4001:4001"
+      - "8080:8080"
+    volumes:
+      - ipfs-data:/data/ipfs
+
+  graph-node:
+    image: graphprotocol/graph-node:v0.40.1
+    depends_on:
+      - postgres
+      - ipfs
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+      - "8020:8020"
+    environment:
+      postgres_host: postgres
+      postgres_user: graph-node
+      postgres_password: letmein
+      postgres_db: graph-node
+      ipfs: "ipfs:5001"
+      ethereum: 'mainnet:http://host.docker.internal:8545'
+
+volumes:
+  pgdata:
+  ipfs-data:
